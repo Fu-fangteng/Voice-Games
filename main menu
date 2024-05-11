@@ -1,0 +1,29 @@
+let button1,button2,button3;
+
+function preload()
+{
+  bk = loadImage("https://i.imgur.com/TzUOgvl.png");
+}
+
+function setup() {
+  createCanvas(800, 800);
+  button1 = createButton("Ice and Fire");
+  button2 = createButton("Fishing");
+  button3 = createButton("Gold Miner");
+  button1.size(100,50);
+  button2.size(100,50);
+  button3.size(100,50);
+   button1.position(width/5*2,height/4);
+   button2.position(width/10*3,height/4*3);
+   button3.position(width/3*2,height/5*3);
+  
+}
+
+function draw() {
+  //background(120);
+  image(bk, 0, 0, width, height);
+  fill(245,25,110);
+  noStroke();
+  textSize(45)
+  text("",width/3,height/9);
+}
