@@ -1,10 +1,11 @@
 let fishY;
-let barY;
 let barHeight = 100;
 let fishSize = 50;
-let progress = 50;   
-let maxProgress = 100; 
-let speed = 1;
+let progress = 50;
+let maxProgress = 100;
+let barTop;
+let catchSound, failSound, bgMusic;
+let mic;
 
 function preload() {
   catchSound = loadSound('catch.MP3');
@@ -16,44 +17,75 @@ function preload() {
 
 function setup() {
   createCanvas(400, 400);
-  barY = height / 2;
-  fishY = barY + barHeight / 2;
+  barTop = height / 2 - barHeight / 2; 
+  fishY = random(20, height - 20); 
+  mic = new p5.AudioIn();
+  mic.start();
 }
+
 function draw() {
   background(220);
+  adjustBarPosition();
+
 
   fill(150);
-  let barTop = mouseY;
   rect(50, barTop, 20, barHeight);
 
-  fill(255, 0, 0);
 
+  fill(255, 0, 0);
   fishY = map(noise(frameCount * 0.01), 0, 1, 10, height - 10);
   ellipse(60, fishY, fishSize, fishSize / 2);
+
 
   fill(0, 255, 0);
   let progressBarHeight = map(progress, 0, maxProgress, 0, height);
   rect(350, height - progressBarHeight, 30, progressBarHeight);
 
+
+  updateProgress();
+
+  checkGameEnd();
+}
+
+function adjustBarPosition() {
+  let level = mic.getLevel();
+  let soundLevel = floor(map(level, 0, 1, 0, 10000));
+  let direction = 1;
+  if (soundLevel >= 170) {
+
+    direction =-1.5;
+  } 
+  barTop += direction * 5
+  barTop = constrain(barTop, 0, height - barHeight);
+}
+
+
+function updateProgress() {
   if (fishY >= barTop && fishY <= barTop + barHeight) {
-    progress = min(maxProgress, progress + 0.3);
+    progress = min(maxProgress, progress + 0.7);
   } else {
-    progress = max(0, progress - 0.3);
+    progress = max(0, progress - 0.5);
   }
+}
 
 
+function checkGameEnd() {
   if (progress <= 0) {
     fill(255, 0, 0);
     textSize(32);
     text("Game Over", 120, height / 2);
-    failSound.play();
-    noLoop();  
+    if (!failSound.isPlaying()) {
+      failSound.play();
+    }
+    noLoop();
   }
   if (progress >= maxProgress) {
     fill(0, 255, 0);
     textSize(32);
     text("You Win!", 120, height / 2);
-    catchSound.play();
-    noLoop();  
+    if (!catchSound.isPlaying()) {
+      catchSound.play();
+    }
+    noLoop();
   }
 }
