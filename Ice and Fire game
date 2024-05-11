@@ -7,9 +7,15 @@ let tx2 = -250, ty2 = 250;
 let xRed1, yRed1, xBlue1, yBlue1, xRed2, yRed2, xBlue2, yBlue2;
 let gridSize = 100;
 let rx1,rx2,ry1,ry2;
+let positions = [];
+let positions2 = [];
+let countRed = 0;
+let countGreen = 0;
+
 function setup() {
   createCanvas(1000, 1000);
   angleMode(DEGREES);
+  rectMode(CENTER);
 }
 
 function draw() {
@@ -17,6 +23,16 @@ function draw() {
   drawGrid();
   translate(width / 2, height / 2);
 
+  for (let pos of positions) {
+    push();
+    translate(pos.x, pos.y);
+    fill(pos.color);
+    rect(0,0,80,80);
+    pop();
+    
+   
+  }
+  
   push();
   translate(tx1, ty1);
   drawBalls(angle1, pivotIsRed1, true);
@@ -25,10 +41,20 @@ function draw() {
 
   push();
   translate(tx2, ty2);
+  
   drawBalls(angle2, pivotIsRed2, false);
   calculateRealTimeCoordinates(false);
   pop();
+  noStroke();
+  fill(25,16,110);
+  textSize(16);
+  text("Red squares: ",-windowWidth*3/8,height/7*3+20);
+  text(countRed,-windowWidth*3/8,height/7*3);
+  text("Green squares: " ,windowWidth*3/12,-height/6.5*3);
+  text(countGreen,windowWidth*3/12,-height/6.5*3+20);
   
+  //console.log("Red squares: " + countRed);
+  //console.log("Green squares: " + countGreen);
   //console.log(rx1);
 }
 
@@ -79,12 +105,18 @@ function keyPressed() {
   if (keyCode === 76) { // A键控制第一组小球
     if(rx1>gridSize && rx1 < width-gridSize && ry1>gridSize && ry1 < height-gridSize ){
     checkAndToggleRotation(1);
+       addSquare(tx1, ty1, [144, 44, 65]); 
+        positions.push({x: tx1, y: ty1, color:[144,44,65]});
+     
   }
   }
     
   if (keyCode === 65) { // L键控制第二组小球
     if(rx2>gridSize && rx2 < width-gridSize && ry2>gridSize && ry2 < height-gridSize ){
     checkAndToggleRotation(2);
+        addSquare(tx2, ty2, [44, 144, 65]);
+      positions.push({x: tx2, y: ty2, color:[44,144,65]});
+  
     }
   }
 }
@@ -116,9 +148,13 @@ function checkAndToggleRotation(group) {
 
   if (group === 1) {
     tx1 = gridX; ty1 = gridY;
+    circle(gridX,gridY,20);
   } else {
     tx2 = gridX; ty2 = gridY;
+    circle(gridX,gridY,20);
   }
+  //console.log(gridX)
+  //console.log(gridY)
 }
 
 function calculateRealTimeCoordinates(isFirstGroup) {
@@ -139,4 +175,32 @@ function calculateRealTimeCoordinates(isFirstGroup) {
       ry2 = ty2 + yBlue2 + height / 2;
     }
   }
+}
+
+function addSquare(x, y, color) {
+  let found = false
+  updateColorCount(color, 1); // 增加新颜色计数
+  
+  for (let i = 0; i < positions.length; i++) {
+    if (positions[i].x === x && positions[i].y === y) {
+      found = true;
+      if (!arraysEqual(positions[i].color, color) || arraysEqual(positions[i].color, color)) { // 位置相同，颜色不同
+        updateColorCount(positions[i].color, -1); // 减少旧颜色计数
+      }
+      break;
+  }
+}
+}
+
+function updateColorCount(color, increment) {
+  if (color[0] === 144 && color[1] === 44 && color[2] === 65) {
+    countRed += increment;  // 红色计数
+  } else if (color[0] === 44 && color[1] === 144 && color[2] === 65) {
+    countGreen += increment;  // 绿色计数
+  }
+}
+
+// 比较两个颜色数组是否相等
+function arraysEqual(a, b) {
+  return a.length === b.length && a.every((val, index) => val === b[index]);
 }
