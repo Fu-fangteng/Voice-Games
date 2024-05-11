@@ -11,8 +11,13 @@ let positions = [];
 let positions2 = [];
 let countRed = 0;
 let countGreen = 0;
+let countdown = 30; // 倒计时初始值 30 秒
+let countdownActive = false; // 是否激活倒计时
+let winner = ''; // 胜者信息
+let startTime; // 记录倒计时开始的时间
 
 function setup() {
+  
   createCanvas(1000, 1000);
   angleMode(DEGREES);
   rectMode(CENTER);
