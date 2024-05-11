@@ -1,0 +1,59 @@
+let fishY;
+let barY;
+let barHeight = 100;
+let fishSize = 50;
+let progress = 50;   
+let maxProgress = 100; 
+let speed = 1;
+
+function preload() {
+  catchSound = loadSound('catch.MP3');
+  failSound = loadSound('fail.MP3');
+  bgMusic = loadSound('background.MP3', () => {
+    bgMusic.loop(); 
+  });
+}
+
+function setup() {
+  createCanvas(400, 400);
+  barY = height / 2;
+  fishY = barY + barHeight / 2;
+}
+function draw() {
+  background(220);
+
+  fill(150);
+  let barTop = mouseY;
+  rect(50, barTop, 20, barHeight);
+
+  fill(255, 0, 0);
+
+  fishY = map(noise(frameCount * 0.01), 0, 1, 10, height - 10);
+  ellipse(60, fishY, fishSize, fishSize / 2);
+
+  fill(0, 255, 0);
+  let progressBarHeight = map(progress, 0, maxProgress, 0, height);
+  rect(350, height - progressBarHeight, 30, progressBarHeight);
+
+  if (fishY >= barTop && fishY <= barTop + barHeight) {
+    progress = min(maxProgress, progress + 0.3);
+  } else {
+    progress = max(0, progress - 0.3);
+  }
+
+
+  if (progress <= 0) {
+    fill(255, 0, 0);
+    textSize(32);
+    text("Game Over", 120, height / 2);
+    failSound.play();
+    noLoop();  
+  }
+  if (progress >= maxProgress) {
+    fill(0, 255, 0);
+    textSize(32);
+    text("You Win!", 120, height / 2);
+    catchSound.play();
+    noLoop();  
+  }
+}
