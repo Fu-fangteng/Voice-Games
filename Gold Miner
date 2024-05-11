@@ -1,0 +1,132 @@
+let golds = [];
+let hook;
+let score = 0;
+let bk;
+let goldNum = 20;
+function preload()
+{
+  bk = loadImage("https://i.imgur.com/RhyxYBP.png")
+}
+
+function setup() {
+  createCanvas(800, 600);
+  for (let i = 0; i < goldNum; i++) {
+    golds.push(new Gold(random(width), random(height /2, height)));
+  }
+  hook = new Hook(width / 2,70);
+}
+
+function draw() {
+ image(bk, 0, 0, width, height);
+  for (let i = golds.length - 1; i >= 0; i--) {
+    golds[i].show();
+    if (hook.caught(golds[i]) && !hook.carryingGold) {
+       hook.retract(); 
+      hook.attachGold(golds[i]);
+      
+      golds.splice(i, 1); 
+    }
+  }
+
+  hook.update();
+  hook.show();
+
+  fill(0);
+  noStroke();
+  textSize(24);
+  fill(255);
+  text(`Score: ${score}`, 10, 30);
+}
+
+function mousePressed() {
+  hook.shoot();
+}
+
+class Gold {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.size = random(20, 50);
+    this.value = int(this.size);
+  }
+
+  show() {
+    fill(255, 215, 0);
+    ellipse(this.x, this.y, this.size, this.size);
+  }
+}
+
+class Hook {
+  constructor(x, y) {
+    this.originX = x;
+    this.originY = y;
+    this.x = x;
+    this.y = y;
+    this.length = 50;
+    this.angle = PI;
+    this.speed = 0.03;
+    this.shooting = false;
+    this.retracting = false;
+    this.carryingGold = null;
+  }
+
+  update() {
+    if (this.shooting) {
+      if (!this.retracting) {
+        this.length += 3;
+        if (this.length > 600 || this.y > height) {
+          this.retracting = true;
+        }
+      } else {
+        this.length -= 4;
+        if (this.length <= 100) {
+          if (this.carryingGold) {
+            score += this.carryingGold.value;  // Add score for the carried gold
+            this.carryingGold = null;
+          }
+          this.shooting = false;
+          this.retracting = false;
+          this.length = 50;
+        }
+      }
+    } else {
+      this.angle -= this.speed;
+      if (this.angle > PI || this.angle < 0) { 
+        this.speed = -this.speed;
+      }
+    }
+    this.x = this.originX + this.length * cos(this.angle);
+    this.y = this.originY + this.length * sin(this.angle);
+    if (this.carryingGold) {
+      this.carryingGold.x = this.x;  // Move gold with the hook
+      this.carryingGold.y = this.y;
+    }
+  }
+
+  show() {
+    stroke(255);
+    strokeWeight(3);
+    line(this.originX, this.originY, this.x, this.y);
+    if (this.carryingGold) {
+      this.carryingGold.show();
+    }
+  }
+
+  shoot() {
+    if (!this.shooting) {
+      this.shooting = true;
+    }
+  }
+
+  retract() {
+    this.retracting = true;
+  }
+
+  caught(gold) {
+    return !this.retracting && dist(this.x, this.y, gold.x, gold.y) < gold.size / 2;
+  }
+
+  attachGold(gold) {
+    this.carryingGold = gold;  // Attach gold to the hook
+  }
+}
