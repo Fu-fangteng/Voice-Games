@@ -105,17 +105,16 @@ function keyPressed() {
   if (keyCode === 76) { // A键控制第一组小球
     if(rx1>gridSize && rx1 < width-gridSize && ry1>gridSize && ry1 < height-gridSize ){
     checkAndToggleRotation(1);
-       addSquare(tx1, ty1, [144, 44, 65]); 
-        positions.push({x: tx1, y: ty1, color:[144,44,65]});
-     
+    addOrUpdateSquare(tx1, ty1, [144, 44, 65]);
+    //positions.push({x: tx1, y: ty1, color:[144,44,65]});
   }
   }
     
   if (keyCode === 65) { // L键控制第二组小球
     if(rx2>gridSize && rx2 < width-gridSize && ry2>gridSize && ry2 < height-gridSize ){
     checkAndToggleRotation(2);
-        addSquare(tx2, ty2, [44, 144, 65]);
-      positions.push({x: tx2, y: ty2, color:[44,144,65]});
+        addOrUpdateSquare(tx2, ty2, [44, 144, 65]);
+      //positions.push({x: tx2, y: ty2, color:[44,144,65]});
   
     }
   }
@@ -177,19 +176,26 @@ function calculateRealTimeCoordinates(isFirstGroup) {
   }
 }
 
-function addSquare(x, y, color) {
-  let found = false
-  updateColorCount(color, 1); // 增加新颜色计数
-  
-  for (let i = 0; i < positions.length; i++) {
-    if (positions[i].x === x && positions[i].y === y) {
-      found = true;
-      if (!arraysEqual(positions[i].color, color) || arraysEqual(positions[i].color, color)) { // 位置相同，颜色不同
-        updateColorCount(positions[i].color, -1); // 减少旧颜色计数
-      }
-      break;
-  }
-}
+function addOrUpdateSquare(x, y, color) {
+    let found = false;
+    for (let i = 0; i < positions.length; i++) {
+        if (positions[i].x === x && positions[i].y === y) {
+            found = true;
+            if (!arraysEqual(positions[i].color, color)) { // 如果位置相同但颜色不同
+                // 更新计数器，减少旧颜色
+                updateColorCount(positions[i].color, -1);
+                // 增加新颜色
+                updateColorCount(color, 1);
+                // 更新颜色
+                positions[i].color = color;
+            }
+            break;
+        }
+    }
+    if (!found) { // 如果位置上没有方块
+        positions.push({x: x, y: y, color: color});
+        updateColorCount(color, 1); // 只有在添加新方块时增加计数
+    }
 }
 
 function updateColorCount(color, increment) {
