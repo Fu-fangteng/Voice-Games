@@ -1,45 +1,105 @@
 let golds = [];
 let hook;
-let score = 0;
+let score1 = 0;
+let score2 = 0;
 let bk;
 let goldNum = 20;
+let gameTime = 30; // Total game time in seconds
+let remainingTime;
+
 function preload()
 {
   bk = loadImage("https://i.imgur.com/RhyxYBP.png")
 }
 
 function setup() {
-  createCanvas(800, 600);
+  createCanvas(800, 800);
   for (let i = 0; i < goldNum; i++) {
-    golds.push(new Gold(random(width), random(height /2, height)));
+    golds.push(new Gold(random(width), random(height /3, 2*height/3)));
   }
-  hook = new Hook(width / 2,70);
+  hook1 = new Hook(width / 2,70,0);
+  hook2 = new Hook(width/2, height -70,1);
+  remainingTime = gameTime;
+  frameRate(60); // Set frame rate
 }
 
 function draw() {
  image(bk, 0, 0, width, height);
-  for (let i = golds.length - 1; i >= 0; i--) {
+  updateTimer();
+  
+  if (remainingTime > 0) {
+    for (let i = golds.length - 1; i >= 0; i--) {
     golds[i].show();
-    if (hook.caught(golds[i]) && !hook.carryingGold) {
-       hook.retract(); 
-      hook.attachGold(golds[i]);
+    if (hook1.caught(golds[i]) && !hook1.carryingGold) {
+       hook1.retract(); 
+      hook1.attachGold(golds[i]);
+      
+      golds.splice(i, 1); 
+    }
+      if (hook2.caught(golds[i]) && !hook2.carryingGold) {
+       hook2.retract(); 
+      hook2.attachGold(golds[i]);
       
       golds.splice(i, 1); 
     }
   }
+    
+  hook1.update();
+  hook1.show();
+  hook2.update();
+  hook2.show();
+  }
 
-  hook.update();
-  hook.show();
+else {
+    displayEndGame();
+  }
 
-  fill(0);
+
+    fill(0);
   noStroke();
   textSize(24);
-  fill(255);
-  text(`Score: ${score}`, 10, 30);
+    fill(255);
+  text(`Time: ${remainingTime.toFixed(1)}s`, width - 200, 30);
 }
 
-function mousePressed() {
-  hook.shoot();
+
+function keyPressed() {
+  if(remainingTime > 0)
+     {
+       if (key === 'A' ) {
+    hook1.shoot();
+  }
+  if (key === 'L' ) {
+    hook2.shoot();
+  }
+     }
+
+}
+
+function updateTimer() {
+  if (remainingTime > 0) {
+    remainingTime -= 1 / 60; // Subtract the frame time
+  } else {
+    remainingTime = 0;
+  }
+}
+
+function displayEndGame() {
+  background(200);
+  textSize(32);
+  fill(0);
+  if(score1 > score2)
+    {
+      text(`Game Over! Player1 Win! Final Score: ${score1}`, 100, 300);
+    }
+    if(score1 < score2)
+    {
+      text(`Game Over! Player2 Win! Final Score: ${score2}`, 100, 300);
+    }
+    if(score1 == score2)
+    {
+      text(`Game Over! It's a draw! Final Score: ${score1}`, 100, 300);
+    }
 }
 
 class Gold {
@@ -57,7 +117,7 @@ class Gold {
 }
 
 class Hook {
-  constructor(x, y) {
+  constructor(x, y,state ) {
     this.originX = x;
     this.originY = y;
     this.x = x;
@@ -68,6 +128,7 @@ class Hook {
     this.shooting = false;
     this.retracting = false;
     this.carryingGold = null;
+    this.state = state;
   }
 
   update() {
@@ -81,8 +142,16 @@ class Hook {
         this.length -= 4;
         if (this.length <= 100) {
           if (this.carryingGold) {
-            score += this.carryingGold.value;  // Add score for the carried gold
+            if (this.state ==0)
+              {
+            score1 += this.carryingGold.value;  // Add score for the carried gold
             this.carryingGold = null;
+              }
+            else{
+            score2 += this.carryingGold.value;  // Add score for the carried gold
+            this.carryingGold = null;
+            }
+
           }
           this.shooting = false;
           this.retracting = false;
@@ -90,9 +159,18 @@ class Hook {
         }
       }
     } else {
-      this.angle -= this.speed;
+      if(this.state == 0)
+        {
+                this.angle -= this.speed;
       if (this.angle > PI || this.angle < 0) { 
         this.speed = -this.speed;
+      }
+        }
+      else{
+          this.angle += this.speed;
+      if (this.angle > 2*PI || this.angle < PI) { 
+        this.speed = -this.speed;
+      }
       }
     }
     this.x = this.originX + this.length * cos(this.angle);
@@ -107,8 +185,25 @@ class Hook {
     stroke(255);
     strokeWeight(3);
     line(this.originX, this.originY, this.x, this.y);
+    
     if (this.carryingGold) {
       this.carryingGold.show();
+    }
+    
+    if (this.state ==0)
+      {
+          fill(0);
+  noStroke();
+  textSize(24);
+  fill(255);
+  text(`Score: ${score1}`, 10, 30);
+      }
+    else{
+        fill(0);
+  noStroke();
+  textSize(24);
+  fill(255);
+  text(`Score: ${score2}`, 10, height - 30);
     }
   }
 
