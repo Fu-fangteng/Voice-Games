@@ -1,0 +1,142 @@
+let angle1 = 0, angle2 = 0;
+let speed = 5;
+let distance = 100;
+let pivotIsRed1 = true, pivotIsRed2 = true;
+let tx1 = 250, ty1 = -250;
+let tx2 = -250, ty2 = 250;
+let xRed1, yRed1, xBlue1, yBlue1, xRed2, yRed2, xBlue2, yBlue2;
+let gridSize = 100;
+let rx1,rx2,ry1,ry2;
+function setup() {
+  createCanvas(1000, 1000);
+  angleMode(DEGREES);
+}
+
+function draw() {
+  background(150);
+  drawGrid();
+  translate(width / 2, height / 2);
+
+  push();
+  translate(tx1, ty1);
+  drawBalls(angle1, pivotIsRed1, true);
+  calculateRealTimeCoordinates(true);
+  pop();
+
+  push();
+  translate(tx2, ty2);
+  drawBalls(angle2, pivotIsRed2, false);
+  calculateRealTimeCoordinates(false);
+  pop();
+  
+  //console.log(rx1);
+}
+
+function drawGrid() {
+  stroke(200);
+  for (let x = 0; x <= width; x += gridSize) {
+    line(x, gridSize, x, height-gridSize);
+  }
+  for (let y = 0; y <= height; y += gridSize) {
+    line(gridSize, y, width-gridSize, y);
+  }
+}
+
+function drawBalls(angle, pivotIsRed, isFirstGroup) {
+  let xRed, yRed, xBlue, yBlue;
+  if (pivotIsRed) {
+    xRed = -distance * cos(angle);
+    yRed = -distance * sin(angle);
+    xBlue = 0;
+    yBlue = 0;
+  } else {
+    xBlue = distance * cos(angle);
+    yBlue = distance * sin(angle);
+    xRed = 0;
+    yRed = 0;
+  }
+  fill(255, 0, 0);
+  ellipse(xRed, yRed, gridSize/4, gridSize/4);
+  fill(0, 0, 255);
+  ellipse(xBlue, yBlue, gridSize/4, gridSize/4);
+   
+
+  
+  if (isFirstGroup) {
+    angle1 += speed;
+    xRed1 = xRed; yRed1 = yRed;
+    xBlue1 = xBlue; yBlue1 = yBlue;
+
+  } else {
+    angle2 += speed;
+    xRed2 = xRed; yRed2 = yRed;
+    xBlue2 = xBlue; yBlue2 = yBlue;
+    
+  }
+}
+
+function keyPressed() {
+  if (keyCode === 76) { // A键控制第一组小球
+    if(rx1>gridSize && rx1 < width-gridSize && ry1>gridSize && ry1 < height-gridSize ){
+    checkAndToggleRotation(1);
+  }
+  }
+    
+  if (keyCode === 65) { // L键控制第二组小球
+    if(rx2>gridSize && rx2 < width-gridSize && ry2>gridSize && ry2 < height-gridSize ){
+    checkAndToggleRotation(2);
+    }
+  }
+}
+
+function checkAndToggleRotation(group) {
+  let oldTx, oldTy, xRed, yRed, xBlue, yBlue, pivotIsRed;
+  if (group === 1) {
+    oldTx = tx1; oldTy = ty1;
+    xRed = xRed1; yRed = yRed1;
+    xBlue = xBlue1; yBlue = yBlue1;
+    pivotIsRed = pivotIsRed1 = !pivotIsRed1;
+  } else {
+    oldTx = tx2; oldTy = ty2;
+    xRed = xRed2; yRed = yRed2;
+    xBlue = xBlue2; yBlue = yBlue2;
+    pivotIsRed = pivotIsRed2 = !pivotIsRed2;
+  }
+
+  let gridX = Math.floor((oldTx + (pivotIsRed ? xBlue : xRed)) / gridSize) * gridSize + gridSize / 2;
+  let gridY = Math.floor((oldTy + (pivotIsRed ? yBlue : yRed)) / gridSize) * gridSize + gridSize / 2;
+
+  if (pivotIsRed) {
+    tx = oldTx + (xBlue - xRed);
+    ty = oldTy + (yBlue - yRed);
+  } else {
+    tx = oldTx + (xRed - xBlue);
+    ty = oldTy + (yRed - yBlue);
+  }
+
+  if (group === 1) {
+    tx1 = gridX; ty1 = gridY;
+  } else {
+    tx2 = gridX; ty2 = gridY;
+  }
+}
+
+function calculateRealTimeCoordinates(isFirstGroup) {
+  if (isFirstGroup) {
+    if (pivotIsRed1) {
+      rx1 = tx1 + xRed1 + width / 2;
+      ry1 = ty1 + yRed1 + height / 2;
+    } else {
+      rx1 = tx1 + xBlue1 + width / 2;
+      ry1 = ty1 + yBlue1 + height / 2;
+    }
+  } else {
+    if (pivotIsRed2) {
+      rx2 = tx2 + xRed2 + width / 2;
+      ry2 = ty2 + yRed2 + height / 2;
+    } else {
+      rx2 = tx2 + xBlue2 + width / 2;
+      ry2 = ty2 + yBlue2 + height / 2;
+    }
+  }
+}
