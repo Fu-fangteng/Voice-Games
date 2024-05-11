@@ -4,21 +4,26 @@ let fishSize = 50;
 let progress = 50;
 let maxProgress = 100;
 let barTop;
+let fishNum = 0;  // 初始化捕获到的鱼的数量
 let catchSound, failSound, bgMusic;
 let mic;
+let delayOver = false;
+let startTime;
+
 
 function preload() {
+  startFrame = frameCount;
   catchSound = loadSound('catch.MP3');
   failSound = loadSound('fail.MP3');
   bgMusic = loadSound('background.MP3', () => {
-    bgMusic.loop(); 
+    bgMusic.loop();  // 背景音乐循环播放
   });
 }
 
 function setup() {
   createCanvas(400, 400);
-  barTop = height / 2 - barHeight / 2; 
-  fishY = random(20, height - 20); 
+  barTop = height / 2 - barHeight / 2;
+  fishY = random(20, height - 20);
   mic = new p5.AudioIn();
   mic.start();
 }
@@ -26,39 +31,40 @@ function setup() {
 function draw() {
   background(220);
   adjustBarPosition();
-
+  
+  // 显示捕获到的鱼的数量
+  fill(0);
+  textSize(16);
+  text("Caught: " + fishNum, width - 100, 30);
 
   fill(150);
   rect(50, barTop, 20, barHeight);
-
 
   fill(255, 0, 0);
   fishY = map(noise(frameCount * 0.01), 0, 1, 10, height - 10);
   ellipse(60, fishY, fishSize, fishSize / 2);
 
-
   fill(0, 255, 0);
   let progressBarHeight = map(progress, 0, maxProgress, 0, height);
   rect(350, height - progressBarHeight, 30, progressBarHeight);
 
-
   updateProgress();
 
-  checkGameEnd();
+  if(checkGameEnd()) {
+    noLoop(); // 停止绘制，结束游戏
+  }
 }
 
 function adjustBarPosition() {
   let level = mic.getLevel();
   let soundLevel = floor(map(level, 0, 1, 0, 10000));
   let direction = 1;
-  if (soundLevel >= 170) {
-
-    direction =-1.5;
-  } 
-  barTop += direction * 5
+  if (soundLevel >= 150) {
+    direction = -1.5;
+  }
+  barTop += direction * 3;
   barTop = constrain(barTop, 0, height - barHeight);
 }
-
 
 function updateProgress() {
   if (fishY >= barTop && fishY <= barTop + barHeight) {
@@ -68,24 +74,38 @@ function updateProgress() {
   }
 }
 
-
 function checkGameEnd() {
   if (progress <= 0) {
-    fill(255, 0, 0);
+      if (!delayOver) {
+    checkDelay();
+  }else{
+      fill(255, 0, 0);
     textSize(32);
-    text("Game Over", 120, height / 2);
+    text("Fish runs", 120, height / 2);
+    
     if (!failSound.isPlaying()) {
       failSound.play();
     }
-    noLoop();
+    resetGame();
+    return false;
+  }
+  
   }
   if (progress >= maxProgress) {
-    fill(0, 255, 0);
-    textSize(32);
-    text("You Win!", 120, height / 2);
-    if (!catchSound.isPlaying()) {
-      catchSound.play();
-    }
-    noLoop();
+    fishNum += 1;  // 增加捕获到的鱼的数量
+    resetGame();
+    return false; // 不结束游戏，而是重置以继续
+  }
+  return false;
+}
+
+function resetGame() {
+  progress = 50; // 重置进度条
+  // 可以添加其他需要重置的游戏状态
+}
+function checkDelay() {
+  // 检查是否已经过去了1000毫秒（1秒）
+  if (millis() - startTime > 1000) {
+    delayOver = true;
   }
 }
