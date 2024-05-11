@@ -48,10 +48,10 @@ function draw() {
   noStroke();
   fill(25,16,110);
   textSize(16);
-  text("Red squares: ",-windowWidth*3/8,height/7*3+20);
-  text(countRed,-windowWidth*3/8,height/7*3);
-  text("Green squares: " ,windowWidth*3/12,-height/6.5*3);
-  text(countGreen,windowWidth*3/12,-height/6.5*3+20);
+  text("Green squares: ",-windowWidth*3/8,height/7*3+20);
+  text(countGreen,-windowWidth*3/8,height/7*3);
+  text("Red squares: " ,windowWidth*3/12,-height/6.5*3);
+  text(countRed,windowWidth*3/12,-height/6.5*3+20);
   
   //console.log("Red squares: " + countRed);
   //console.log("Green squares: " + countGreen);
