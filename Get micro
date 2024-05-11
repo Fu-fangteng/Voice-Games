@@ -1,0 +1,33 @@
+let mic;
+let deviceNumber;
+let soundLevel = 0;
+let button1,button2;
+
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  mic = new p5.AudioIn();
+  mic.start(startMic);
+}
+
+function startMic() {
+  console.log('Microphone ready');
+}
+
+function draw() {
+  background(220);
+  fill(0,0,0)
+  stroke(29)
+  textSize(60) 
+  let vol = mic.getLevel();
+
+  soundLevel = floor(map(vol, 0, 1, 0, 10000));
+  console.log(soundLevel);
+
+  fill(0, 128, 255); 
+  rect(width / 2 - 50, height - soundLevel, 100, soundLevel);
+  
+  textAlign(CENTER);
+  textSize(18);
+  text(`Sound Level: ${soundLevel.toFixed(2)}`, width / 2,  40) ;
+}
