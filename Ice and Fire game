@@ -11,7 +11,7 @@ let positions = [];
 let positions2 = [];
 let countRed = 0;
 let countGreen = 0;
-let countdown = 30; // 倒计时初始值 30 秒
+let fulltime = 5; // 倒计时初始值 30 秒
 let countdownActive = false; // 是否激活倒计时
 let winner = ''; // 胜者信息
 let startTime; // 记录倒计时开始的时间
@@ -58,6 +58,18 @@ function draw() {
   text("Red squares: " ,windowWidth*3/12,-height/6.5*3);
   text(countRed,windowWidth*3/12,-height/6.5*3+20);
   
+  
+   if (countdownActive) {
+        let elapsed = (millis() - startTime) / 1000;
+        countdown = fulltime - elapsed;
+        if (countdown <= 0) {
+            countdown = 0;
+            countdownActive = false; // 停止倒计时
+            determineWinner(); // 判断胜者
+        }
+        displayCountdown();
+     }
+  displayScoresAndWinner();
   //console.log("Red squares: " + countRed);
   //console.log("Green squares: " + countGreen);
   //console.log(rx1);
@@ -108,6 +120,10 @@ function drawBalls(angle, pivotIsRed, isFirstGroup) {
 
 function keyPressed() {
   if (keyCode === 76) { // A键控制第一组小球
+    if (!countdownActive) {
+        countdownActive = true;
+        startTime = millis(); // 记录开始时间
+    }
     if(rx1>gridSize && rx1 < width-gridSize && ry1>gridSize && ry1 < height-gridSize ){
     checkAndToggleRotation(1);
     addOrUpdateSquare(tx1, ty1, [144, 44, 65]);
@@ -116,6 +132,10 @@ function keyPressed() {
   }
     
   if (keyCode === 65) { // L键控制第二组小球
+    if (!countdownActive) {
+        countdownActive = true;
+        startTime = millis(); // 记录开始时间
+    }
     if(rx2>gridSize && rx2 < width-gridSize && ry2>gridSize && ry2 < height-gridSize ){
     checkAndToggleRotation(2);
         addOrUpdateSquare(tx2, ty2, [44, 144, 65]);
@@ -214,4 +234,31 @@ function updateColorCount(color, increment) {
 // 比较两个颜色数组是否相等
 function arraysEqual(a, b) {
   return a.length === b.length && a.every((val, index) => val === b[index]);
+}
+
+function displayCountdown() {
+    fill(0);
+    textSize(32);
+    text("Time left: " + nf(countdown, 0, 2) + "s", -width / 2 + 20, -height / 2 + 50);
+}
+
+function determineWinner() {
+     noLoop();
+    background(111);
+    if (countRed > countGreen) {
+        winner = "Red wins!";
+    } else if (countGreen > countRed) {
+        winner = "Green wins!";
+    } else {
+        winner = "It's a tie!";
+    }
+}
+
+function displayScoresAndWinner() {
+    fill(134,123,32);
+    textSize(36);
+    if (winner !== '') {
+        textSize(62);
+        text(winner, -width/6, -height / 4);
+    }
 }
